@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout,
     QHBoxLayout, QFileDialog, QMessageBox
 )
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt
 
 from Model import Model
@@ -16,6 +16,7 @@ class Interface(QWidget):
         self.setWindowTitle("Reclassificador")
         self.setGeometry(200, 200, 900, 600) # Define as dimensões da janela
         self.setFixedSize(self.size()) # Mantém as dimensões da janela fixas
+        self.setWindowIcon(QIcon(Model().resource_path("figures/check_fig.png")))
 
         # Layout principal
         main_layout = QHBoxLayout(self)
@@ -73,7 +74,7 @@ class Interface(QWidget):
         self.btn_md.clicked.connect(lambda: self.classify_image("Muita dor"))
         self.btn_inc.clicked.connect(lambda: self.classify_image("Incerto"))
         self.btn_undo.clicked.connect(self.undo_operation)
-        self.btn_compare.clicked.connect(self.close)
+        self.btn_compare.clicked.connect(self.compare_datasets)
         self.btn_exit.clicked.connect(self.close)
 
         # Adiciona layouts ao principal
@@ -94,6 +95,22 @@ class Interface(QWidget):
         self.btn_select_dir.setEnabled(True)
         self.btn_exit.setEnabled(True)
         self.btn_undo.setEnabled(False)
+
+        # Inserção de label para inserir a logo da UFU
+        self.logo_label = QLabel()
+        pixmap = QPixmap(Model().resource_path("figures/fig_ufu.png"))
+        pixmap = pixmap.scaled(150, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.logo_label.setPixmap(pixmap)
+        self.logo_label.setAlignment(Qt.AlignCenter)  # Centraliza a imagem
+        self.logo_label.setContentsMargins(0, 30, 0, 0)  # Padding para espaçar a exibição da imagem
+        right_layout.addWidget(self.logo_label)
+
+        # Inserção de label para definir a versão do software
+        # Seguindo o padrão de Versionamento Semântico
+        # MAJOR.MINOR.PATCH-SUFIX
+        self.version_label = QLabel("Ver. 0.5.0", self)
+        self.version_label.setAlignment(Qt.AlignCenter)
+        right_layout.addWidget(self.version_label)
 
         # -------------------------------------------------------------------
         # -------------------------------------------------------------------
@@ -182,3 +199,6 @@ class Interface(QWidget):
             self.load_image()
         else:
             QMessageBox.warning(self, "Erro", "O arquivo não foi encontrado para desfazer.")
+
+    def compare_datasets(self):
+        return
