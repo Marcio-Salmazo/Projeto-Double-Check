@@ -75,3 +75,68 @@ class Model:
                 image_list.insert(current_index, src_path)
 
         return current_index, image_list
+
+    @staticmethod
+    def list_subdir(dir_path):
+        return [
+            name for name in os.listdir(dir_path)
+            if os.path.isdir(os.path.join(dir_path, name))
+        ]
+
+    @staticmethod
+    def verify_existence(path, folder):
+        full_path = os.path.join(path, folder)
+        if os.path.isdir(full_path):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def find_correspondence(file_name, current_class, og_path):
+
+        folders = Model.list_subdir(og_path)
+        for folder in folders:
+
+            if folder is not current_class:
+                items_list = Model.directory_files_list(os.path.join(og_path, folder))
+                # Nova lista contendo apena os nome de arquivos dos itens originais
+                name_list = set(os.path.basename(f) for f in items_list)
+
+                if file_name in name_list:
+                    return folder
+
+
+
+    @staticmethod
+    def compare_datsets(original_data_path, reclassified_data_path):
+
+        expected_dirs = ['Indolor', 'Pouca dor', 'Muita dor', 'Incerto']
+        divergences = {} # Dicionário, contendo as imagens que não tem correspondências, para serem tratadas depois
+
+        for folder in expected_dirs:
+            # Para cada uma das pastas, verificar se elas existem nos diretórios original e reclassificado
+            if Model.verify_existence(original_data_path, folder) and Model.verify_existence(reclassified_data_path,
+                                                                                             folder):
+                # Coleta do itens pertencentes às pasta, para validar se há divergências
+                og_itens = Model.directory_files_list(os.path.join(original_data_path, folder))
+                rec_itens = Model.directory_files_list(os.path.join(reclassified_data_path, folder))
+
+                # Nova lista contendo apena os nome de arquivos dos itens originais
+                og_names_set = set(os.path.basename(f) for f in og_itens)
+
+                # Para cada um do itens da lista coletada do dataset reclassificada, verificar se há
+                # correspondência entre os itens da lista coletada do dataset original
+                for item in rec_itens:
+
+                    item_base_name = Model.get_file_basename(item)
+                    if item_base_name not in og_names_set:
+                        # Se não houver correspondência, obter qual outra classe associada ao item e
+                        # salvar no dicionário
+                        og_class = Model.find_correspondence(item_base_name, folder, original_data_path)
+                        divergences[item_base_name] = {"classe_original": og_class,
+                                                  "classe_atual": folder}
+
+            else:
+                continue
+
+        return divergences

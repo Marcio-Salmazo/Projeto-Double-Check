@@ -1,5 +1,3 @@
-
-import sys
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout,
     QHBoxLayout, QFileDialog, QMessageBox
@@ -7,6 +5,7 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt
 
+from LoadWindow import LoadingWindow
 from Model import Model
 
 
@@ -108,7 +107,7 @@ class Interface(QWidget):
         # Inserção de label para definir a versão do software
         # Seguindo o padrão de Versionamento Semântico
         # MAJOR.MINOR.PATCH-SUFIX
-        self.version_label = QLabel("Ver. 0.5.0", self)
+        self.version_label = QLabel("Ver. 1.0.0", self)
         self.version_label.setAlignment(Qt.AlignCenter)
         right_layout.addWidget(self.version_label)
 
@@ -201,4 +200,29 @@ class Interface(QWidget):
             QMessageBox.warning(self, "Erro", "O arquivo não foi encontrado para desfazer.")
 
     def compare_datasets(self):
-        return
+
+        QMessageBox.warning(self, "Observação", "Atenção: Esta funcionalidade deve ser executada apenas para comparar "
+                                                "bases de dados que contenham a mesma estrutura de diretórios,uma vez "
+                                                "que a função pressupõe essa organização em AMBOS os diretórios "
+                                                "(original e reclassificado) para percorrer os itens.")
+        QMessageBox.warning(self, "Atenção", "Selecionar o diretório contendo o dataset original à ser comparado")
+        original_data_path = Model.open_directory()
+        QMessageBox.warning(self, "Atenção", "Selecionar o diretório contendo o dataset re-classificado")
+        reclassified_data_path = Model.open_directory()
+
+        if original_data_path is None or reclassified_data_path is None:
+            QMessageBox.warning(self, "Erro", "Diretório nulo ou incompatível. Por favor, re-faça a operação")
+            return
+
+        loadScreen = LoadingWindow()
+        loadScreen.show()
+        # força atualização da interface para mostrar o diálogo
+        QApplication.processEvents()
+
+        divergencies = Model.compare_datsets(original_data_path, reclassified_data_path)
+
+        if divergencies:
+            loadScreen.close()
+
+        print(divergencies)
+
